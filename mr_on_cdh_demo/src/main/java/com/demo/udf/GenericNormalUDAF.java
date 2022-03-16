@@ -12,6 +12,6 @@ public class GenericNormalUDAF extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] info) throws SemanticException {
-        return super.getEvaluator(info);
+        return new GenericNormalEvaluator(info);
     }
 }
