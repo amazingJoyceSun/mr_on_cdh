@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>mr_on_cdh_demo</artifactId>
+    <version>1.0</version>
+    <!-- 开发cdh版hive udf、MR需要指定cdh版本和hive版本 -->
+    <properties>
+<!--        <maven.compiler.source>1.8</maven.compiler.source>-->
+<!--        <maven.compiler.target>1.8</maven.compiler.target>-->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <encoding>UTF-8</encoding>
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
+
+        <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
+
+        <log4j.version>1.2.17</log4j.version>
+        <slf4j.version> 1.7.7</slf4j.version>
+
+        <hadoop.version>3.0.0-cdh6.3.2</hadoop.version>
+        <hive.version>2.1.1-cdh6.3.2</hive.version>
+
+        <datanucleus.version>4.1.6</datanucleus.version>
+        <datanucleus-api-jdo.version>4.2.1</datanucleus-api-jdo.version>
+        <datanucleus-core.version>4.1.6</datanucleus-core.version>
+        <datanucleus-rdbms.version>4.1.7</datanucleus-rdbms.version>
+        <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
+        <!--        <hadoop.version>2.6.0-cdh5.14.2</hadoop.version>-->
+        <!--        <hive.version>1.1.0-cdh5.14.2</hive.version>-->
+    </properties>
+    <!-- 开发cdh版hive udf需要导入官方依赖库-->
+    <repositories>
+        <repository>
+            <id>cloudera</id>
+            <name>cloudera</name>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+        <repository>
+            <id>datanucleus</id>
+            <name>datanucleus maven repository</name>
+            <url>http://www.datanucleus.org/downloads/maven2</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <dependencies>
+    <!--        maven.plugins-->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+
+        <!-- Log Start -->
+        <!-- 方便本地调试可以使用log4j做日志适配，日志输出统一使用Slf4j门面进行输出，需要将log4j.properties放到class path -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--  log end  -->
+        <!--  hadoop  -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <!--        开发hadoop MR 所需jar依赖（cdh版hadoop mr任务所需依赖包 均为cdh版hadoop）-->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <!--MR访问hive表通过Hcatalog 依赖开发（当有通过MR任务读写hive表等操作时需要依赖等包）-->
+        <!-- https://mvnrepository.com/artifact/org.apache.hcatalog/hcatalog-core -->
+        <dependency>
+            <groupId>org.apache.hive.hcatalog</groupId>
+            <artifactId>hive-hcatalog-core</artifactId>
+            <version>${hive.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--https://mvnrepository.com/artifact/org.apache.hcatalog/hcatalog -->
+        <dependency>
+            <groupId>org.apache.hive.hcatalog</groupId>
+            <artifactId>hive-hcatalog</artifactId>
+            <!--            <version>0.11.0</version>-->
+            <version>${hive.version}</version>
+            <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--  hive -->
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>${hive.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>sqludf_${maven.build.timestamp}</finalName>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <resources>
+            <!-- 这里的resource配置的是需要导入到项目的资源文件夹 -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- 这里的${profiles.dir}是你上面配置的属性值，用于动态替换，比如打包的时候输入的是-Pdev则这里就是的${profiles.dir}就是dev的值 -->
+            <resource>
+                <directory>src/main/profile/${profiles.dir}</directory>
+            </resource>
+        </resources>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.13</version>
+                <configuration>
+                    <useFile>false</useFile>
+                    <disableXmlReport>true</disableXmlReport>
+                    <!-- If you have classpath issue like NoDefClassError,... -->
+                    <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+                    <includes>
+                        <include>**/*Test.*</include>
+                        <include>**/*Suite.*</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass></mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
